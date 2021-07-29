@@ -1,0 +1,35 @@
+version: "2"
+
+networks:
+  zeebe_network:
+    driver: bridge
+
+services:
+  gateway:
+    restart: always
+    container_name: standalone_gateway
+    image: camunda/zeebe:1.1.0
+    environment:
+      - ZEEBE_LOG_LEVEL=debug
+      - ZEEBE_STANDALONE_GATEWAY=true
+      - ZEEBE_GATEWAY_NETWORK_HOST=0.0.0.0
+      - ZEEBE_GATEWAY_NETWORK_PORT=26500
+      - ZEEBE_GATEWAY_CLUSTER_CONTACTPOINT=node0:26502
+      - ZEEBE_GATEWAY_CLUSTER_PORT=26502
+      - ZEEBE_GATEWAY_CLUSTER_HOST=standalone_gateway
+    ports:
+      - "26500:26500"
+    networks:
+      - zeebe_network
+  node0:
+    container_name: test_zeebe_broker_1
+    image: camunda/zeebe:1.1.0
+    environment:
+      - ZEEBE_LOG_LEVEL=debug
+      - ZEEBE_BROKER_CLUSTER_NODEID=0
+      - ZEEBE_BROKER_CLUSTER_PARTITIONSCOUNT=1
+      - ZEEBE_BROKER_CLUSTER_REPLICATIONFACTOR=1
+      - ZEEBE_BROKER_CLUSTER_CLUSTERSIZE=1
+      - ZEEBE_BROKER_CLUSTER_INITIALCONTACTPOINTS=node0:26502
+    networks:
+      - zeebe_network
